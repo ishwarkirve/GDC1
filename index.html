@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body{
+    margin: auto;
+}
+h3{
+    text-align: center;
+}
+.containt{
+    display: flex;
+    flex-direction: column;
+    max-width: 400px;
+    margin: auto;
+    border: 2px solid grey;
+    height: 400px;
+    width: 500px;
+}
+.name{
+    margin-top: 25px;
+}
+
+label{
+    margin: 10px;
+    width: 100px;
+}
+input{
+    margin: 15px;
+    padding: 8px;
+    border: 1px solid black;
+    border-radius: 4px;
+    width: 200px;
+}
+.lab{
+    margin: 0;
+    width: 50px;
+    margin-top: 20px;
+}
+button{
+    width: 80px;
+    height: 20px;
+    margin: 20px 0 0 150px;
+}
+#dataDisplay{
+    margin: auto;
+    text-align: center;
+}
+table{
+    align-items: center;
+    margin-left: 30%;
+}
+    </style>
+</head>
+<body>
+    <form id="myForm" action="/server">
+        <h3>Resistration Form</h3>
+        <div class="containt">
+            <div class="name">
+                <label for="name">Name</label>
+                <input type="text" name="name" id="name" placeholder="Enter full name">
+            </div>
+            <div class="email">
+                <label for="email">Email</label>
+                <input type="text" name="email" id="email" placeholder="Enter email">
+            </div>
+            <div class="pass">
+                <label for="pass">Password</label>
+                <input type="password" name="pass" id="pass" placeholder="Enter password">
+            </div>
+            <div class="date">
+                <label for="date">Date Of Birth</label>
+                <input type="date" name="date" id="date">
+            </div>
+            <div class="tac">
+                <input class="lab" type="checkbox" name="tac" id="tac">
+                <label class="lab" for="tac">Accept terms & conditions</label>
+            </div>
+            <button type="submit">Submit</button>
+        </div>
+        <div id="dataDisplay">
+            <h3>Entries</h3>
+            <table id="dataTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Password</th>
+                        <th>Date of Birth</th>
+                        <th>Accepted Terms</th>
+                    </tr>
+                </thead>
+                <tbody id="result"></tbody>
+            </table>
+        </div>
+    </form>
+    <script>
+        loadEntries();
+        document.getElementById('myForm').addEventListener('submit', function (event) {
+    event.preventDefault(); // Prevent form from submitting normally
+
+    // Get form data
+    const name = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('pass').value;
+    const dateOfBirth = document.getElementById('date').value;
+    const tac = document.getElementById('tac').checked;
+    const resultTableBody = document.getElementById('result');
+
+    if (!name || !email || !password || !dateOfBirth) {
+        alert("All fields are mandatory."); // Display alert if any field is empty
+        return; // Stop further execution
+    }
+
+    if (!email.includes('@')) {
+        alert("Email must contain '@'.");
+        return;
+    }
+
+    if (!validateAge(dateOfBirth)) {
+            alert('Age must be between 18 and 55 years.');
+            return; // Stop form submission
+        }
+
+    const entry = {
+            name,
+            email,
+            password,
+            dateOfBirth,
+            tac
+        };
+
+        // Save to localStorage
+        saveEntry(entry);
+
+        // Append the new row to the table
+        appendRow(entry);
+
+        // Reset the form
+        document.getElementById('myForm').reset();
+    //this.reset(); // Reset the form fields
+});
+
+function validateAge(dob) {
+        const today = new Date();
+        const birthDate = new Date(dob);
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+
+        // Adjust age if the birthday hasn't occurred yet this year
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+
+        return age >= 18 && age <= 55;
+    }
+
+function saveEntry(entry) {
+        // Get existing entries
+        const entries = JSON.parse(localStorage.getItem('entries')) || [];
+        // Add the new entry
+        entries.push(entry);
+        // Save back to localStorage
+        localStorage.setItem('entries', JSON.stringify(entries));
+    }
+
+    function loadEntries() {
+        const entries = JSON.parse(localStorage.getItem('entries')) || [];
+        entries.forEach(entry => appendRow(entry));
+    }
+
+function appendRow(entry) {
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `
+            <td>${entry.name}</td>
+            <td>${entry.email}</td>
+            <td>${entry.password}</td>
+            <td>${entry.dateOfBirth}</td>
+            <td>${entry.tac ? 'Yes' : 'No'}</td>
+        `;
+        document.getElementById('result').appendChild(newRow);
+    }
+// Function to display stored data
+// function displayData() {
+//     const dataDisplay = document.getElementById('dataDisplay');
+//     const users = JSON.parse(localStorage.getItem('users')) || [];
+
+//     dataDisplay.innerHTML = ''; // Clear existing data display
+//     users.forEach((user, index) => {
+//         dataDisplay.innerHTML += `
+//         <p><strong>Name:</strong> ${document.getElementById('name').value}</p>
+//         <p><strong>Email:</strong> ${document.getElementById('email').value}</p>
+//         <p><strong>Password:</strong> ${ document.getElementById('pass').value}</p>
+//         <p><strong>Date of Birth:</strong> ${document.getElementById('date').value}</p>
+//         <p><strong>Accepted Terms:</strong> ${tac ? 'Yes' : 'No'}</p>
+//     `;
+//     });
+// }
+
+// Call displayData on initial load to show existing data
+//displayData();
+// To clear a specific item, e.g., 'users'
+localStorage.removeItem('users');
+
+    </script>
+</body>
+</html>
